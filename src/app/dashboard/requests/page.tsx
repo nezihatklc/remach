@@ -14,7 +14,7 @@ export default async function MyRequestsPage() {
   }
 
   const requests = await prisma.urgentRequest.findMany({
-    where: { userId: user.id },
+    where: { userId: user.userId },
     orderBy: { createdAt: 'desc' },
     include: { category: true }
   })
@@ -57,9 +57,9 @@ export default async function MyRequestsPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                      ${req.urgencyLevel === 'CRITICAL' ? 'bg-red-100 text-red-800' : 
-                        req.urgencyLevel === 'URGENT' ? 'bg-orange-100 text-orange-800' : 
-                        'bg-blue-100 text-blue-800'}`}>
+                      ${req.urgencyLevel === 'CRITICAL' ? 'bg-red-100 text-red-800' :
+                        req.urgencyLevel === 'URGENT' ? 'bg-orange-100 text-orange-800' :
+                          'bg-blue-100 text-blue-800'}`}>
                       {req.urgencyLevel}
                     </span>
                   </td>
