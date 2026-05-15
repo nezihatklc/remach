@@ -16,7 +16,7 @@ export function LanguageSwitcher({ currentLocale }: { currentLocale: string }) {
       onClick={toggleLanguage}
       className="flex items-center justify-center px-3 py-1.5 rounded-md border-2 border-gray-200 hover:border-yellow-500 hover:bg-yellow-50 text-gray-800 font-bold text-sm transition-all"
     >
-      {currentLocale === 'en' ? '🇹🇷 TR' : '🇬🇧 EN'}
+      {currentLocale === 'en' ? 'TR' : 'EN'}
     </button>
   )
 }
