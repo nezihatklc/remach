@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String          @id @default(uuid())
+  name           String
+  email          String          @unique
+  passwordHash   String
+  role           String          @default("USER") // USER, ADMIN
+  accountType    String          @default("BUYER") // BUYER, SELLER, BOTH
+  phone          String?
+  companyName    String?
+  sector         String?
+  city           String?
+  industrialZone String?
+  website        String?
+  isVerified     Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  listings       Listing[]
+  requests       UrgentRequest[]
+  favorites      Favorite[]
+  inquiriesSent  Inquiry[]       @relation("SenderInquiries")
+  inquiriesRecv  Inquiry[]       @relation("SellerInquiries")
+  reports        Report[]
+}
+
+model Category {
+  id               String          @id @default(uuid())
+  name             String
+  slug             String          @unique
+  parentCategoryId String?
+  parentCategory   Category?       @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id])
+  subCategories    Category[]      @relation("CategoryHierarchy")
+  listings         Listing[]
+  requests         UrgentRequest[]
+}
+
+model Listing {
+  id                String         @id @default(uuid())
+  title             String
+  description       String
+  categoryId        String
+  sellerId          String
+  condition         String
+  brand             String?
+  model             String?
+  partNumber        String?
+  compatibility     String?
+  technicalSpecs    String?
+  dimensions        String?
+  material          String?
+  quantity          Int            @default(1)
+  price             Float
+  currency          String         @default("TRY")
+  city              String
+  district          String?
+  industrialZone    String?
+  status            String         @default("AVAILABLE") // AVAILABLE, RESERVED, SOLD
+  isUrgentAvailable Boolean        @default(false)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  category          Category       @relation(fields: [categoryId], references: [id])
+  seller            User           @relation(fields: [sellerId], references: [id])
+  images            ListingImage[]
+  favorites         Favorite[]
+  inquiries         Inquiry[]
+  reports           Report[]
+}
+
+model ListingImage {
+  id        String   @id @default(uuid())
+  listingId String
+  imageUrl  String
+  createdAt DateTime @default(now())
+
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+}
+
+model UrgentRequest {
+  id               String   @id @default(uuid())
+  userId           String
+  title            String
+  partName         String
+  description      String
+  categoryId       String
+  machineBrand     String?
+  machineModel     String?
+  technicalDetails String?
+  quantity         Int      @default(1)
+  city             String
+  urgencyLevel     String   @default("NORMAL") // NORMAL, URGENT, CRITICAL
+  deadline         DateTime?
+  status           String   @default("ACTIVE") // ACTIVE, CLOSED
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user             User     @relation(fields: [userId], references: [id])
+  category         Category @relation(fields: [categoryId], references: [id])
+}
+
+model Favorite {
+  id        String   @id @default(uuid())
+  userId    String
+  listingId String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, listingId])
+}
+
+model Inquiry {
+  id           String   @id @default(uuid())
+  listingId    String
+  senderId     String
+  sellerId     String
+  message      String
+  contactPhone String?
+  contactEmail String?
+  createdAt    DateTime @default(now())
+
+  listing      Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  sender       User     @relation("SenderInquiries", fields: [senderId], references: [id])
+  seller       User     @relation("SellerInquiries", fields: [sellerId], references: [id])
+}
+
+model Report {
+  id          String   @id @default(uuid())
+  reporterId  String
+  listingId   String
+  reason      String
+  description String
+  status      String   @default("PENDING") // PENDING, REVIEWED, RESOLVED
+  createdAt   DateTime @default(now())
+
+  reporter    User     @relation(fields: [reporterId], references: [id])
+  listing     Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+}

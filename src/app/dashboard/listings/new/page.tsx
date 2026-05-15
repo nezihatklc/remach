@@ -1,0 +1,115 @@
+import { prisma } from '@/lib/prisma'
+import { getUser } from '@/lib/auth'
+import { redirect } from 'next/navigation'
+import { createListing } from '@/app/actions/listing'
+
+export default async function NewListingPage() {
+  const user = await getUser()
+  if (!user) {
+    redirect('/login')
+  }
+
+  const categories = await prisma.category.findMany()
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-12">
+      <h1 className="text-2xl font-bold text-gray-900 mb-8">Post New Listing</h1>
+      
+      <div className="bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-200">
+        <form action={createListing} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+              <input name="title" required className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500" placeholder="e.g. Siemens 5kW AC Motor" />
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+              <textarea name="description" required rows={4} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500" placeholder="Describe the part, its history, and current state..."></textarea>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+              <select name="categoryId" required className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500 bg-white">
+                <option value="">Select a category</option>
+                {categories.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Condition *</label>
+              <select name="condition" required className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500 bg-white">
+                <option value="">Select condition</option>
+                <option value="New">New</option>
+                <option value="Used">Used</option>
+                <option value="Refurbished">Refurbished</option>
+                <option value="For repair">For repair</option>
+                <option value="Scrap / parts only">Scrap / parts only</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
+              <input name="brand" className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500" placeholder="e.g. Siemens" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
+              <input name="model" className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Part Number</label>
+              <input name="partNumber" className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Compatibility</label>
+              <input name="compatibility" className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500" placeholder="Which machines does this fit?" />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Technical Specs</label>
+              <textarea name="technicalSpecs" rows={2} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500" placeholder="Dimensions, voltage, power rating..."></textarea>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Price *</label>
+              <div className="flex gap-2">
+                <input name="price" type="number" step="0.01" required className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500" placeholder="0.00" />
+                <select name="currency" className="w-24 px-4 py-2 border border-gray-300 rounded-md bg-white">
+                  <option value="TRY">TRY</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+              <input name="quantity" type="number" min="1" defaultValue="1" className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">City *</label>
+              <input name="city" required className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Industrial Zone</label>
+              <input name="industrialZone" className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500" />
+            </div>
+          </div>
+          
+          <div className="pt-4 border-t border-gray-100 flex justify-end">
+            <button type="submit" className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-8 rounded-md transition-colors">
+              Publish Listing
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
