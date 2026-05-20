@@ -6,6 +6,7 @@ import { AlertCircle, Clock, CheckCircle2 } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
+// Fetch and display urgent requests for the logged-in user
 export default async function MyRequestsPage() {
   const user = await getUser()
 
