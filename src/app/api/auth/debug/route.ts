@@ -1,33 +1,37 @@
 import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
 import fs from 'fs'
 import path from 'path'
 
 export async function GET() {
   try {
     const cwd = process.cwd()
-    const filesInCwd = fs.existsSync(cwd) ? fs.readdirSync(cwd) : []
-    
     const prismaDir = path.join(cwd, 'prisma')
-    const filesInPrisma = fs.existsSync(prismaDir) ? fs.readdirSync(prismaDir) : []
+    const tempDbPath = path.join('/tmp', 'dev.db')
     
-    const tempDir = '/tmp'
-    const filesInTemp = fs.existsSync(tempDir) ? fs.readdirSync(tempDir) : []
+    // Execute a test query to trigger the prisma client initialization and copy logic
+    const users = await prisma.user.findMany({
+      select: { id: true, email: true, name: true, role: true }
+    })
     
-    // Check if we can find dev.db anywhere in the traced files
-    const parentDir = path.resolve(cwd, '..')
-    const filesInParent = fs.existsSync(parentDir) ? fs.readdirSync(parentDir) : []
+    const filesInTemp = fs.existsSync('/tmp') ? fs.readdirSync('/tmp') : []
 
     return NextResponse.json({
+      success: true,
       cwd,
-      filesInCwd,
-      prismaDir,
-      filesInPrisma,
-      tempDir,
+      tempDbPathExists: fs.existsSync(tempDbPath),
+      tempDbSize: fs.existsSync(tempDbPath) ? fs.statSync(tempDbPath).size : null,
       filesInTemp,
-      parentDir,
-      filesInParent,
+      usersCount: users.length,
+      users,
     })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message, stack: error.stack }, { status: 500 })
+    return NextResponse.json({
+      success: false,
+      error: error.message,
+      stack: error.stack,
+      tempDbPathExists: fs.existsSync('/tmp/dev.db'),
+      filesInTemp: fs.existsSync('/tmp') ? fs.readdirSync('/tmp') : [],
+    }, { status: 500 })
   }
 }
